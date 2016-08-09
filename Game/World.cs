@@ -81,6 +81,7 @@ namespace Game
     }
     partial class World
     {
+        public HashSet<Unit> Units;
         public World(Field field)
         {
             Field = field;

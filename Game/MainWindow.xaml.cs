@@ -14,6 +14,9 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using OpenTK;
+using OpenTK.Graphics;
+using OpenTK.Graphics.OpenGL;
 
 namespace Game
 {
@@ -23,78 +26,51 @@ namespace Game
     public partial class MainWindow : Window
     {
         private World w;
+        private bool init;
         public MainWindow()
         {
+            init = false;
+            
             InitializeComponent();
         }
-        private void DrawTile(DrawingContext dc, int x, int y, bool passable = true, double threat = 0, double vision = 0)
+        private void OpenGLInit()
         {
-            const double width = 20;
-            const double height = 20;
-            if (passable)
-            {
-                double xup = x * width;
-                double yup = y * height;
-                PathFigure pu = new PathFigure(new Point(xup, yup),
-                    new[]
-                    {
-                        new LineSegment(new Point(xup + width, yup), false),
-                        new LineSegment(new Point(xup, yup + height), false)
-                    }, true);
-                PathFigure pl = new PathFigure(new Point(xup + width, yup + height),
-                    new[]
-                    {
-                        new LineSegment(new Point(xup + width, yup), false),
-                        new LineSegment(new Point(xup, yup + height), false)
-                    }, true);
-                Geometry gu = new PathGeometry(new[] { pu });
-                Geometry gl = new PathGeometry(new[] { pl });
-                dc.DrawGeometry(new SolidColorBrush(Color.FromScRgb((float)vision, 0, 0, 1)), null, gu);
-                dc.DrawGeometry(new SolidColorBrush(Color.FromScRgb((float)threat, 1, 0, 0)), null, gl);
-            }
-            else
-            {
-                double xup = x * width;
-                double yup = y * height;
-                PathFigure p = new PathFigure(new Point(xup, yup),
-                    new[]
-                    {
-                        new LineSegment(new Point(xup + width, yup), false),
-                        new LineSegment(new Point(xup+width, yup + height), false),
-                        new LineSegment(new Point(xup, yup + height), false),
-                    }, false);
-                Geometry g = new PathGeometry(new[] { p });
-                dc.DrawGeometry(new SolidColorBrush(Color.FromScRgb(1, 0, 0, 0)), null, g);
-            }
+            GL.ClearColor(Color4.White);
+            GL.Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
+            init = true;
+            glControl_Resize(this, new EventArgs());
         }
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            w=World.Generate(256,256,22);
-            Tile start = w.Field[new Position(1, 0)], end = w.Field[new Position(255, 255)];
-            Stopwatch sw=new Stopwatch();
-            sw.Start();
-           var path=AStar.Pather.FindPath(w, start, end);
-            sw.Stop();
-            mainWindow.Title = sw.ElapsedMilliseconds.ToString();
-            DrawingVisual dv = new DrawingVisual();
-            using (DrawingContext dc = dv.RenderOpen())
-            {
-                //dc.PushTransform(new RotateTransform(12));
-                for (int i = 0; i < w.Field.Width; i++)
-                {
-                    for (int j = 0; j < w.Field.Height; j++)
-                    {
-                       
-                        DrawTile(dc, i, j, w.Field[new Position(i, j)].Passable, 0.5, 1);
-                            //path.Contains(w.Field[new Position(i,j)])?1:0);
-                    }
-                    
-                }
-            }
+            w = World.Generate(1000, 1000, 25);
+            OpenGLInit();
+        }
 
-            RenderTargetBitmap r = new RenderTargetBitmap(w.Field.Width*20, w.Field.Height*20, 96, 96, PixelFormats.Default);
-            r.Render(dv);
-            MainImage.Source = r;
+        private void glControl_Resize(object sender, EventArgs e)
+        {
+            if (init)
+            {
+                GL.Viewport(0, 0, GlControl.Width, GlControl.Height);
+                GL.MatrixMode(MatrixMode.Projection);
+                Matrix4d mat = Matrix4d.CreateOrthographicOffCenter(0, w.Field.Width, w.Field.Height, 0, -10, 10);
+                GL.LoadMatrix(ref mat);
+                GlControl.Invalidate();
+            }
+        }
+        Stopwatch sw = new Stopwatch();
+
+        private void glControl_Paint(object sender, System.Windows.Forms.PaintEventArgs e)
+        {
+            if (init)
+            {
+                sw.Start();
+                GL.Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
+                Graphics.DrawWorld(w);
+                GlControl.SwapBuffers();
+                sw.Stop();
+                mainWindow.Title = sw.ElapsedMilliseconds.ToString(CultureInfo.InvariantCulture);
+                sw.Reset();
+            }
         }
     }
 }

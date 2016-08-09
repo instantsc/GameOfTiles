@@ -15,7 +15,7 @@ namespace Game
             {
                 for (int j = 0; j < height; j++)
                 {
-                    tiles[i,j]=new Tile(new Position(i, j),false);
+                    tiles[i, j] = new Tile(new Position(i, j), false);
                 }
             }
             Field field = new Field(tiles);
@@ -30,17 +30,24 @@ namespace Game
             }
             while (s.Count != 0)
             {
-                Tile t = s.ElementAt(r.Next(s.Count));
+                Tile t = s.ElementAt(r.Next(Math.Min(s.Count,3)));
                 s.Remove(t);
                 var nntiles = field.Neighbours(t);
                 var count = nntiles.Count(x => x.Passable);
-                if (count<= 1||(count <= 2 && r.NextDouble() < 0.5))
+                if (count <= 1 || (count == 2 && (nntiles.Count < 4 || r.Next() < 0.1)))
                 {
                     t.Passable = true;
                     foreach (var tile in nntiles.Where(x => !x.Passable))
                     {
                         s.Add(tile);
                     }
+                }
+            }
+            for (int i = width / 2 - width / 10; i < width / 2 + width / 10; i++)
+            {
+                for (int j = height / 2 - height / 10; j < height / 2 + height / 10; j++)
+                {
+                    tiles[i, j].Passable = true;
                 }
             }
             return new World(field);
