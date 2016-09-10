@@ -80,6 +80,7 @@
     <Compile Include="PriorityQueue\IPriorityQueue.cs" />
     <Compile Include="PriorityQueue\SimplePriorityQueue.cs" />
     <Compile Include="Unit.cs" />
+    <Compile Include="Vision.cs" />
     <Compile Include="World.cs" />
     <Compile Include="WorldGen.cs" />
     <Page Include="MainWindow.xaml">

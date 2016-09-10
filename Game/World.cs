@@ -53,10 +53,8 @@ namespace Game
             Width = tiles.GetLength(0);
             Tiles = tiles;
         }
-        public Tile this[Position pos]
-        {
-            get { return Tiles[pos.X, pos.Y]; }
-        }
+        public Tile this[Position pos] => Tiles[pos.X, pos.Y];
+        public Tile this[int x, int y] => Tiles[x, y];
         public Tile[,] Tiles { get; }
         public int Height { get; } //Y
         public int Width { get; } //X

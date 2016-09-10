@@ -25,11 +25,11 @@ namespace Game
     /// </summary>
     public partial class MainWindow : Window
     {
-        private World w;
-        private bool init;
+        private World _w;
+        private bool _init;
         public MainWindow()
         {
-            init = false;
+            _init = false;
             
             InitializeComponent();
         }
@@ -37,22 +37,22 @@ namespace Game
         {
             GL.ClearColor(Color4.White);
             GL.Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
-            init = true;
+            _init = true;
             glControl_Resize(this, new EventArgs());
         }
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            w = World.Generate(1000, 1000, 25);
+            _w = World.Generate(1000, 1000, 25);
             OpenGLInit();
         }
 
         private void glControl_Resize(object sender, EventArgs e)
         {
-            if (init)
+            if (_init)
             {
                 GL.Viewport(0, 0, GlControl.Width, GlControl.Height);
                 GL.MatrixMode(MatrixMode.Projection);
-                Matrix4d mat = Matrix4d.CreateOrthographicOffCenter(0, w.Field.Width, w.Field.Height, 0, -10, 10);
+                Matrix4d mat = Matrix4d.CreateOrthographicOffCenter(0, _w.Field.Width, _w.Field.Height, 0, -10, 10);
                 GL.LoadMatrix(ref mat);
                 GlControl.Invalidate();
             }
@@ -61,11 +61,11 @@ namespace Game
 
         private void glControl_Paint(object sender, System.Windows.Forms.PaintEventArgs e)
         {
-            if (init)
+            if (_init)
             {
                 sw.Start();
                 GL.Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
-                Graphics.DrawWorld(w);
+                Graphics.DrawWorld(_w);
                 GlControl.SwapBuffers();
                 sw.Stop();
                 mainWindow.Title = sw.ElapsedMilliseconds.ToString(CultureInfo.InvariantCulture);
