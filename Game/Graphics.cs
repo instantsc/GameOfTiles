@@ -31,14 +31,15 @@ namespace Game
                 DrawTriangle(ref vert2, ref vert3, ref vert4, Vector3.Zero);
             }
         }
-        public static void DrawWorld(World w)
+        public static void DrawWorld(World w,Unit u)
         {
             GL.Begin(PrimitiveType.Triangles);
+            var visionmap = w.Vision.VisionField(u);
             for (int i = 0; i < w.Field.Width; i++)
             {
                 for (int j = 0; j < w.Field.Height; j++)
                 {
-                    DrawTile(i, j, w.Field[new Position(i, j)].Passable, 0.5, 0);
+                    DrawTile(i, j, w.Field[new Position(i, j)].Passable, 0.5, visionmap[i,j]?1:0);
                 }
             }
             GL.End();

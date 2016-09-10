@@ -42,7 +42,8 @@ namespace Game
         }
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            _w = World.Generate(1000, 1000, 25);
+            _w = World.Generate(20, 20, 0);
+
             OpenGLInit();
         }
 
@@ -65,7 +66,7 @@ namespace Game
             {
                 sw.Start();
                 GL.Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
-                Graphics.DrawWorld(_w);
+                Graphics.DrawWorld(_w,_w.Units.First());
                 GlControl.SwapBuffers();
                 sw.Stop();
                 mainWindow.Title = sw.ElapsedMilliseconds.ToString(CultureInfo.InvariantCulture);

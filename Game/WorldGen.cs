@@ -50,7 +50,11 @@ namespace Game
                     tiles[i, j].Passable = true;
                 }
             }
-            return new World(field);
+            HashSet<Unit> units=new HashSet<Unit>();
+            Unit viewer=new Unit(3,3,10);
+            field[3, 3].Passable = true;
+            units.Add(viewer);
+            return new World(field,units);
         }
     }
 }

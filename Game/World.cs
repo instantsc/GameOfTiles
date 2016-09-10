@@ -13,6 +13,9 @@ namespace Game
             X = x;
             Y = y;
         }
+        public Position(Unit u) : this(u.X, u.Y)
+        {
+        }
         public int X, Y;
 
         public Position MoveXUp => new Position(X + 1, Y);
@@ -80,9 +83,12 @@ namespace Game
     partial class World
     {
         public HashSet<Unit> Units;
-        public World(Field field)
+        public Vision Vision;
+        public World(Field field,HashSet<Unit> units)
         {
+            Vision=new Vision(this);
             Field = field;
+            Units = units??new HashSet<Unit>();
         }
         public Field Field { get; }
 
