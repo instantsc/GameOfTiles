@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -20,6 +21,8 @@ using OpenTK.Graphics.OpenGL;
 
 namespace Game
 {
+    
+
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
@@ -30,11 +33,16 @@ namespace Game
         public MainWindow()
         {
             _init = false;
-            
+
             InitializeComponent();
         }
         private void OpenGLInit()
         {
+            Graphics.VAOId = GL.GenVertexArray();
+            GL.BindVertexArray(Graphics.VAOId);
+            Graphics.VBOId = GL.GenBuffer();
+            GL.BindBuffer(BufferTarget.ArrayBuffer, Graphics.VBOId);
+
             GL.ClearColor(Color4.White);
             GL.Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
             _init = true;
@@ -66,7 +74,7 @@ namespace Game
             {
                 sw.Start();
                 GL.Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
-                Graphics.DrawWorld(_w,_w.Units.First());
+                Graphics.DrawWorld(_w, _w.Units.First());
                 GlControl.SwapBuffers();
                 sw.Stop();
                 mainWindow.Title = sw.ElapsedMilliseconds.ToString(CultureInfo.InvariantCulture);
