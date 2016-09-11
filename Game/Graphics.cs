@@ -5,7 +5,7 @@ using OpenTK;
 using OpenTK.Graphics.OpenGL;
 namespace Game
 {
-    [Serializable]
+
     public struct Vertex
     {
         public Vertex(Vector3 pos = default(Vector3), Vector3 color = default(Vector3), Vector2 tex = default(Vector2))
@@ -46,15 +46,15 @@ namespace Game
             GL.BindTexture(TextureTarget.Texture2D, 0);
         }
         public static int VAOId, VBOId;
-        private static List<Vertex> DrawList;
-        private static void DrawTriangle(ref Vector3 vertex1, ref Vector3 vertex2, ref Vector3 vertex3, Vector3 color, bool needBeginEnd = false)
+        private static List<Vertex> _drawList;
+        private static void DrawTriangle(ref Vector3 vertex1, ref Vector3 vertex2, ref Vector3 vertex3, Vector3 color)
         {
-            Vertex v1 = new Vertex(vertex1, color);
-            Vertex v2 = new Vertex(vertex2, color);
-            Vertex v3 = new Vertex(vertex3, color);
-            DrawList.Add(v1);
-            DrawList.Add(v2);
-            DrawList.Add(v3);
+            var vertex = new Vertex(vertex1, color);
+            _drawList.Add(vertex);
+            vertex = new Vertex(vertex2, color);
+            _drawList.Add(vertex);
+            vertex = new Vertex(vertex3, color);
+            _drawList.Add(vertex);
         }
         private static void DrawTile(int x, int y, bool passable = true, double threat = 0, double vision = 0)
         {
@@ -76,7 +76,7 @@ namespace Game
         }
         public static void DrawWorld(World w, Unit u)
         {
-            DrawList = new List<Vertex>();
+            _drawList = new List<Vertex>(w.Field.Height * w.Field.Height * 2 * 3);
             var visionmap = w.Vision.VisionField(u);
             for (int i = 0; i < w.Field.Width; i++)
             {
@@ -85,7 +85,7 @@ namespace Game
                     DrawTile(i, j, w.Field[new Position(i, j)].Passable, 0.5, visionmap[i, j] ? 1 : 0);
                 }
             }
-            DrawArray(DrawList.ToArray(), PrimitiveType.Triangles);
+            DrawArray(_drawList.ToArray(), PrimitiveType.Triangles);
         }
     }
 }
