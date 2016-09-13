@@ -30,7 +30,7 @@ namespace Game
             }
             while (s.Count != 0)
             {
-                Tile t = s.ElementAt(r.Next(Math.Min(s.Count,3)));
+                Tile t = s.ElementAt(r.Next(Math.Min(s.Count, 3)));
                 s.Remove(t);
                 var nntiles = field.Neighbours(t);
                 var count = nntiles.Count(x => x.Passable);
@@ -50,11 +50,11 @@ namespace Game
                     tiles[i, j].Passable = true;
                 }
             }
-            HashSet<Unit> units=new HashSet<Unit>();
-            Unit viewer=new Unit(3,3,10);
+            HashSet<Unit> units = new HashSet<Unit>();
+            Unit viewer = new Unit(3, 3, 10);
             field[3, 3].Passable = true;
             units.Add(viewer);
-            return new World(field,units);
+            return new World(field, units);
         }
     }
 }

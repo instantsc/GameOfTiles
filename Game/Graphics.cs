@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Runtime.InteropServices;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
 namespace Game
 {
-
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct Vertex
     {
         public Vertex(Vector3 pos = default(Vector3), Vector3 color = default(Vector3), Vector2 tex = default(Vector2))
@@ -14,20 +15,56 @@ namespace Game
             Color = color;
             Tex = tex;
         }
-        public Vector3 Pos, Color;
+        public Vector3 Pos;
+        public Vector3 Color;
         public Vector2 Tex;
         public static readonly int Size = Marshal.SizeOf(typeof(Vertex));
+    }
+
+    public class ShaderProgram : IDisposable
+    {
+        public int ProgramID { get; }
+        public ShaderProgram(string vertexPath, string fragPath)
+        {
+            int vID = GL.CreateShader(ShaderType.VertexShader);
+            int fID = GL.CreateShader(ShaderType.FragmentShader);
+            string vertexText = File.ReadAllText(vertexPath);
+            string fragText = File.ReadAllText(fragPath);
+            GL.ShaderSource(vID, vertexText);
+            GL.ShaderSource(fID, fragText);
+            GL.CompileShader(vID);
+            GL.CompileShader(fID);
+            ProgramID = GL.CreateProgram();
+            GL.AttachShader(ProgramID, vID);
+            GL.AttachShader(ProgramID, fID);
+            GL.LinkProgram(ProgramID);
+            GL.DetachShader(ProgramID, vID);
+            GL.DetachShader(ProgramID, fID);
+            GL.DeleteShader(vID);
+            GL.DeleteShader(fID);
+            var a=  GL.GetProgramInfoLog(ProgramID);
+        }
+        public void Use()
+        {
+            GL.UseProgram(ProgramID);
+        }
+        public void Dispose()
+        {
+            GL.UseProgram(0);
+            GL.DeleteProgram(ProgramID);
+        }
     }
     static class Graphics
     {
         public static void DrawArray(Vertex[] coords, PrimitiveType type, bool texture = false)
         {
             GL.BindBuffer(BufferTarget.ArrayBuffer, VBOId);
-            GL.EnableClientState(ArrayCap.VertexArray);
-            GL.VertexPointer(3, VertexPointerType.Float, Vertex.Size, 0);
-            GL.EnableClientState(ArrayCap.ColorArray);
-            GL.ColorPointer(3, ColorPointerType.Float, Vertex.Size, Vector3.SizeInBytes);
-            if (texture)
+            GL.BufferData(BufferTarget.ArrayBuffer, Vertex.Size*coords.Length, coords, BufferUsageHint.StaticDraw);
+            GL.EnableVertexAttribArray(0);
+            GL.EnableVertexAttribArray(1);
+            GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, Vertex.Size, 0);
+            GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, Vertex.Size, Vector3.SizeInBytes);
+            /*if (texture)
             {
                 GL.Enable(EnableCap.Texture2D);
                 // GL.BindTexture(TextureTarget.Texture2D, textures);
@@ -39,11 +76,10 @@ namespace Game
             {
                 GL.Disable(EnableCap.Texture2D);
                 GL.DisableClientState(ArrayCap.TextureCoordArray);
-            }
-            GL.BufferData(BufferTarget.ArrayBuffer, Vertex.Size * coords.Length, coords, BufferUsageHint.StaticDraw);
+            }*/
             GL.DrawArrays(type, 0, coords.Length);
             GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
-            GL.BindTexture(TextureTarget.Texture2D, 0);
+            //GL.BindTexture(TextureTarget.Texture2D, 0);
         }
         public static int VAOId, VBOId;
         private static List<Vertex> _drawList;
@@ -82,7 +118,7 @@ namespace Game
             {
                 for (int j = 0; j < w.Field.Height; j++)
                 {
-                    DrawTile(i, j, w.Field[new Position(i, j)].Passable, 0.5, visionmap[i, j] ? 1 : 0);
+                    DrawTile(i, j, w.Field[new Position(i, j)].Passable,0,visionmap[i,j]?1:0);
                 }
             }
             DrawArray(_drawList.ToArray(), PrimitiveType.Triangles);
