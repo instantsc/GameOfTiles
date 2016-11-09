@@ -29,24 +29,17 @@ namespace Game
     public partial class MainWindow : Window
     {
         private World _w;
-        private ShaderProgram sp;
         private bool _init;
         public MainWindow()
         {
             _init = false;
-
             InitializeComponent();
         }
         private void OpenGLInit()
         {
-            Graphics.VAOId = GL.GenVertexArray();
-            GL.BindVertexArray(Graphics.VAOId);
-            Graphics.VBOId = GL.GenBuffer();
-            GL.BindBuffer(BufferTarget.ArrayBuffer, Graphics.VBOId);
-            sp = new ShaderProgram("shaders\\vertex.glsl", "shaders\\fragment.glsl");
-            sp.Use();
-            Matrix4 mat = Matrix4.CreateOrthographicOffCenter(0, _w.Field.Width,  _w.Field.Height,0, -1, 1);
-            int loc = GL.GetUniformLocation(sp.ProgramID, "MVP");
+            Graphics.Init();
+            Matrix4 mat = Matrix4.CreateOrthographicOffCenter(0, _w.Field.Width, _w.Field.Height, 0, -1, 1);
+            int loc = GL.GetUniformLocation(Graphics.ShaderProgram.ProgramID, "MVP");
             GL.UniformMatrix4(loc, false, ref mat);
             GL.ClearColor(Color4.White);
             GL.Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
@@ -64,7 +57,6 @@ namespace Game
             if (_init)
             {
                 GL.Viewport(0, 0, GlControl.Width, GlControl.Height);
-                int vvv = GL.GetAttribLocation(sp.ProgramID, "vcolor");
                 GlControl.Invalidate();
             }
         }

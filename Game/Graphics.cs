@@ -40,7 +40,7 @@ namespace Game
             GL.DetachShader(ProgramID, fID);
             GL.DeleteShader(vID);
             GL.DeleteShader(fID);
-            var a=  GL.GetProgramInfoLog(ProgramID);
+            var a = GL.GetProgramInfoLog(ProgramID);
         }
         public void Use()
         {
@@ -54,10 +54,21 @@ namespace Game
     }
     static class Graphics
     {
-        public static void DrawArray(Vertex[] coords, PrimitiveType type, bool texture = false)
+        public static ShaderProgram ShaderProgram;
+
+        public static void Init()
+        {
+            VAOId = GL.GenVertexArray();
+            GL.BindVertexArray(VAOId);
+            VBOId = GL.GenBuffer();
+            GL.BindBuffer(BufferTarget.ArrayBuffer, VBOId);
+            ShaderProgram = new ShaderProgram("shaders\\vertex.glsl", "shaders\\fragment.glsl");
+            ShaderProgram.Use();
+        }
+        private static void DrawArray(Vertex[] coords, PrimitiveType type, bool texture = false)
         {
             GL.BindBuffer(BufferTarget.ArrayBuffer, VBOId);
-            GL.BufferData(BufferTarget.ArrayBuffer, Vertex.Size*coords.Length, coords, BufferUsageHint.StaticDraw);
+            GL.BufferData(BufferTarget.ArrayBuffer, Vertex.Size * coords.Length, coords, BufferUsageHint.StaticDraw);
             GL.EnableVertexAttribArray(0);
             GL.EnableVertexAttribArray(1);
             GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, Vertex.Size, 0);
@@ -102,7 +113,7 @@ namespace Game
             {
                 for (int j = 0; j < w.Field.Height; j++)
                 {
-                    DrawTile(i, j, w.Field[new Position(i, j)].Passable,0,visionmap[i,j]?1:0);
+                    DrawTile(i, j, w.Field[new Position(i, j)].Passable, 0, visionmap[i, j] ? 1 : 0);
                 }
             }
             DrawArray(_drawList.ToArray(), PrimitiveType.Triangles);
