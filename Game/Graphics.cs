@@ -9,15 +9,13 @@ namespace Game
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct Vertex
     {
-        public Vertex(Vector3 pos = default(Vector3), Vector3 color = default(Vector3), Vector2 tex = default(Vector2))
+        public Vertex(Vector3 pos = default(Vector3), Vector3 color = default(Vector3))
         {
             Pos = pos;
             Color = color;
-            Tex = tex;
         }
         public Vector3 Pos;
         public Vector3 Color;
-        public Vector2 Tex;
         public static readonly int Size = Marshal.SizeOf(typeof(Vertex));
     }
 
@@ -64,22 +62,8 @@ namespace Game
             GL.EnableVertexAttribArray(1);
             GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, Vertex.Size, 0);
             GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, Vertex.Size, Vector3.SizeInBytes);
-            /*if (texture)
-            {
-                GL.Enable(EnableCap.Texture2D);
-                // GL.BindTexture(TextureTarget.Texture2D, textures);
-                GL.TexEnv(TextureEnvTarget.TextureEnv, TextureEnvParameter.TextureEnvMode, (int)TextureEnvMode.Modulate);
-                GL.EnableClientState(ArrayCap.TextureCoordArray);
-                GL.TexCoordPointer(2, TexCoordPointerType.Float, Vertex.Size, 2 * Vector3.SizeInBytes);
-            }
-            else
-            {
-                GL.Disable(EnableCap.Texture2D);
-                GL.DisableClientState(ArrayCap.TextureCoordArray);
-            }*/
             GL.DrawArrays(type, 0, coords.Length);
             GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
-            //GL.BindTexture(TextureTarget.Texture2D, 0);
         }
         public static int VAOId, VBOId;
         private static List<Vertex> _drawList;
