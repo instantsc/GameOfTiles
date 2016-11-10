@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using OpenTK;
@@ -68,28 +69,40 @@ namespace Game
             ShaderProgram = new ShaderProgram("shaders\\vertex.glsl", "shaders\\fragment.glsl");
             ShaderProgram.Use();
         }
-        private static void DrawArray(Vertex[] coords, PrimitiveType type, bool texture = false)
+        private static void DrawArray(Vector3[] pos, Vector3[] color, PrimitiveType type, bool texture = false)
         {
-            GL.BindBuffer(BufferTarget.ArrayBuffer, VBOId);
-            GL.BufferData(BufferTarget.ArrayBuffer, Vertex.Size * coords.Length, coords, BufferUsageHint.StreamDraw);
-            GL.EnableVertexAttribArray(0);
-            GL.EnableVertexAttribArray(1);
-            GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, Vertex.Size, 0);
-            GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, Vertex.Size, Vector3.SizeInBytes);
-            GL.DrawArrays(type, 0, coords.Length);
+            if (pos != null)
+            {
+                GL.EnableVertexAttribArray(0);
+                GL.BindBuffer(BufferTarget.ArrayBuffer, VBOId);
+                GL.BufferData(BufferTarget.ArrayBuffer, Vector3.SizeInBytes * pos.Length, pos, BufferUsageHint.DynamicDraw);
+                GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, Vector3.SizeInBytes, 0);
+            }
+            if (color != null)
+            {
+                GL.EnableVertexAttribArray(1);
+                GL.BindBuffer(BufferTarget.ArrayBuffer, VBOId2);
+                GL.BufferData(BufferTarget.ArrayBuffer, Vector3.SizeInBytes * color.Length, color, BufferUsageHint.StreamDraw);
+                GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, Vector3.SizeInBytes, 0);
+            }
+            GL.DrawArrays(type, 0, color.Length);
             GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
         }
-        public static int VAOId, VBOId, VBOId2;
-        private static Vertex[] _drawList;
+        private static int VAOId;
+        private static int VBOId;
+        private static int VBOId2;
+        private static Vector3[] _poses;
+        private static Vector3[] _colors;
+
         private static int _iii = 0;
         private static void DrawTriangle(ref Vector3 vertex1, ref Vector3 vertex2, ref Vector3 vertex3, Vector3 color)
         {
-            var vertex = new Vertex(vertex1, color);
-            _drawList[_iii++] = vertex;
-            vertex = new Vertex(vertex2, color);
-            _drawList[_iii++] = vertex;
-            vertex = new Vertex(vertex3, color);
-            _drawList[_iii++] = vertex;
+            _poses[_iii] = vertex1;
+            _colors[_iii++] = color;
+            _poses[_iii] = vertex2;
+            _colors[_iii++] = color;
+            _poses[_iii] = vertex3;
+            _colors[_iii++] = color;
         }
 
         private static void UpdateTile(int s, bool passable, double threat, double vision)
@@ -100,15 +113,11 @@ namespace Game
                 var c2 = new Vector3(1, 1 - (float)threat, 1 - (float)threat);
                 for (int i = s; i < s + 3; i++)
                 {
-                    var v = _drawList[i];
-                    v.Color = c1;
-                    _drawList[i] = v;
+                    _colors[i] = c1;
                 }
                 for (int i = s + 3; i < s + 6; i++)
                 {
-                    var v = _drawList[i];
-                    v.Color = c2;
-                    _drawList[i] = v;
+                    _colors[i] = c2;
                 }
             }
         }
@@ -132,7 +141,11 @@ namespace Game
         }
         public static void DrawWorld(World w, Unit u)
         {
-            if (!sceneShaped) _drawList = new Vertex[w.Field.Height * w.Field.Height * 2 * 3];
+            if (!sceneShaped)
+            {
+                _poses = new Vector3[w.Field.Height * w.Field.Height * 2 * 3];
+                _colors = new Vector3[w.Field.Height * w.Field.Height * 2 * 3];
+            }
             var visionmap = w.Vision.VisionField(u);
             if (!sceneShaped)
             {
@@ -143,6 +156,7 @@ namespace Game
                         DrawTile(i, j, w.Field[i, j].Passable, 0, visionmap[i, j] ? 1 : 0);
                     }
                 }
+                DrawArray(_poses, _colors, PrimitiveType.Triangles);
                 sceneShaped = true;
             }
             else
@@ -154,8 +168,8 @@ namespace Game
                           UpdateTile(6 * (i * w.Field.Height + j), w.Field[i, j].Passable, 0, visionmap[i, j] ? 1 : 0);
                       }
                   });
+                DrawArray(null, _colors, PrimitiveType.Triangles);
             }
-            DrawArray(_drawList, PrimitiveType.Triangles);
         }
     }
 }
