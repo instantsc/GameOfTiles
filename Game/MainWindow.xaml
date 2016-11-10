@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:Game"
         x:Name="mainWindow" x:Class="Game.MainWindow"
         mc:Ignorable="d"
-        Title="Loading" Height="350" Width="525" Loaded="Window_Loaded">
+        Title="Loading" Height="350" Width="525" Loaded="Window_Loaded" PreviewKeyDown="MainWindow_OnPreviewKeyDown">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>

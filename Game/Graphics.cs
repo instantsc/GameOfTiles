@@ -2,25 +2,11 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
 namespace Game
 {
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public struct Vertex
-    {
-        public Vertex(Vector3 pos = default(Vector3), Vector3 color = default(Vector3))
-        {
-            Pos = pos;
-            Color = color;
-        }
-        public Vector3 Pos;
-        public Vector3 Color;
-        public static readonly int Size = Marshal.SizeOf(typeof(Vertex));
-    }
-
     public class ShaderProgram : IDisposable
     {
         public int ProgramID { get; }
@@ -94,7 +80,7 @@ namespace Game
         private static Vector3[] _poses;
         private static Vector3[] _colors;
 
-        private static int _iii = 0;
+        private static int _iii;
         private static void DrawTriangle(ref Vector3 vertex1, ref Vector3 vertex2, ref Vector3 vertex3, Vector3 color)
         {
             _poses[_iii] = vertex1;
@@ -130,8 +116,8 @@ namespace Game
 
             if (passable)
             {
-                DrawTriangle(ref vert1, ref vert2, ref vert4, Vector3.UnitZ * (float)vision + Vector3.One * (float)(1 - vision));
-                DrawTriangle(ref vert2, ref vert3, ref vert4, Vector3.UnitX * (float)threat + Vector3.One * (float)(1 - threat));
+                DrawTriangle(ref vert1, ref vert2, ref vert4, new Vector3(1 - (float)vision, 1 - (float)vision, 1));
+                DrawTriangle(ref vert2, ref vert3, ref vert4, new Vector3(1, 1 - (float)threat, 1 - (float)threat));
             }
             else
             {

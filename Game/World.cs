@@ -16,7 +16,8 @@ namespace Game
         public Position(Unit u) : this(u.X, u.Y)
         {
         }
-        public int X, Y;
+        public readonly int X;
+        public readonly int Y;
 
         public Position MoveXUp => new Position(X + 1, Y);
         public Position MoveXDown => new Position(X - 1, Y);
@@ -36,7 +37,7 @@ namespace Game
             Position = pos;
             Passable = passable;
         }
-        public Position Position { get; set; }
+        public Position Position { get; }
         public bool Passable { get; set; }
         public int CompareTo(Tile other)
         {
