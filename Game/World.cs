@@ -23,7 +23,7 @@ namespace Game
         public Position MoveYUp => new Position(X, Y + 1);
         public Position MoveYDown => new Position(X, Y - 1);
 
-        public static double Distance(Position pos1, Position pos2) => Math.Sqrt(Math.Pow(pos1.X - pos2.X, 2) + Math.Pow(pos1.Y - pos2.Y, 2));
+        public static double DistanceSqr(Position pos1, Position pos2) => Math.Pow(pos1.X - pos2.X, 2) + Math.Pow(pos1.Y - pos2.Y, 2);
         public override string ToString()
         {
             return $"({X},{Y})";

@@ -58,13 +58,18 @@ namespace Game
         public bool[,] VisionField(Unit u)
         {
             bool[,] result = new bool[w.Field.Width, w.Field.Height];
-            for (int i = 0; i < w.Field.Width; i++)
+            int i0 = (int)Math.Max(0, u.Position.X - u.VisionDistance - 1);
+            int i1 = (int)Math.Min(w.Field.Width, u.Position.X + u.VisionDistance + 2);
+            int j0 = (int)Math.Max(0, u.Position.Y - u.VisionDistance - 1);
+            int j1 = (int)Math.Min(w.Field.Height, u.Position.Y + u.VisionDistance + 2);
+
+            for (int i = i0; i < i1; i++)
             {
-                for (int j = 0; j < w.Field.Height; j++)
+                for (int j = j0; j < j1; j++)
                 {
                     var pos = new Position(i, j);
-                    var distance = Position.Distance(pos, u.Position);
-                    result[i, j] = distance <= u.VisionDistance && Visible(pos, u.Position);
+                    var distance2 = Position.DistanceSqr(pos, u.Position);
+                    result[i, j] = distance2 <= u.VisionDistance*u.VisionDistance && Visible(pos, u.Position);
                 }
             }
             return result;

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
 namespace Game
@@ -55,12 +56,14 @@ namespace Game
     static class Graphics
     {
         public static ShaderProgram ShaderProgram;
-
+        private static bool sceneShaped;
         public static void Init()
         {
+            sceneShaped = false;
             VAOId = GL.GenVertexArray();
             GL.BindVertexArray(VAOId);
             VBOId = GL.GenBuffer();
+            VBOId2 = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ArrayBuffer, VBOId);
             ShaderProgram = new ShaderProgram("shaders\\vertex.glsl", "shaders\\fragment.glsl");
             ShaderProgram.Use();
@@ -68,7 +71,7 @@ namespace Game
         private static void DrawArray(Vertex[] coords, PrimitiveType type, bool texture = false)
         {
             GL.BindBuffer(BufferTarget.ArrayBuffer, VBOId);
-            GL.BufferData(BufferTarget.ArrayBuffer, Vertex.Size * coords.Length, coords, BufferUsageHint.StaticDraw);
+            GL.BufferData(BufferTarget.ArrayBuffer, Vertex.Size * coords.Length, coords, BufferUsageHint.StreamDraw);
             GL.EnableVertexAttribArray(0);
             GL.EnableVertexAttribArray(1);
             GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, Vertex.Size, 0);
@@ -76,16 +79,38 @@ namespace Game
             GL.DrawArrays(type, 0, coords.Length);
             GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
         }
-        public static int VAOId, VBOId;
-        private static List<Vertex> _drawList;
+        public static int VAOId, VBOId, VBOId2;
+        private static Vertex[] _drawList;
+        private static int _iii = 0;
         private static void DrawTriangle(ref Vector3 vertex1, ref Vector3 vertex2, ref Vector3 vertex3, Vector3 color)
         {
             var vertex = new Vertex(vertex1, color);
-            _drawList.Add(vertex);
+            _drawList[_iii++] = vertex;
             vertex = new Vertex(vertex2, color);
-            _drawList.Add(vertex);
+            _drawList[_iii++] = vertex;
             vertex = new Vertex(vertex3, color);
-            _drawList.Add(vertex);
+            _drawList[_iii++] = vertex;
+        }
+
+        private static void UpdateTile(int s, bool passable, double threat, double vision)
+        {
+            if (passable)
+            {
+                var c1 = new Vector3(1 - (float)vision, 1 - (float)vision, 1);
+                var c2 = new Vector3(1, 1 - (float)threat, 1 - (float)threat);
+                for (int i = s; i < s + 3; i++)
+                {
+                    var v = _drawList[i];
+                    v.Color = c1;
+                    _drawList[i] = v;
+                }
+                for (int i = s + 3; i < s + 6; i++)
+                {
+                    var v = _drawList[i];
+                    v.Color = c2;
+                    _drawList[i] = v;
+                }
+            }
         }
         private static void DrawTile(int x, int y, bool passable = true, double threat = 0, double vision = 0)
         {
@@ -107,16 +132,30 @@ namespace Game
         }
         public static void DrawWorld(World w, Unit u)
         {
-            _drawList = new List<Vertex>(w.Field.Height * w.Field.Height * 2 * 3);
+            if (!sceneShaped) _drawList = new Vertex[w.Field.Height * w.Field.Height * 2 * 3];
             var visionmap = w.Vision.VisionField(u);
-            for (int i = 0; i < w.Field.Width; i++)
+            if (!sceneShaped)
             {
-                for (int j = 0; j < w.Field.Height; j++)
+                for (int i = 0; i < w.Field.Width; i++)
                 {
-                    DrawTile(i, j, w.Field[new Position(i, j)].Passable, 0, visionmap[i, j] ? 1 : 0);
+                    for (int j = 0; j < w.Field.Height; j++)
+                    {
+                        DrawTile(i, j, w.Field[i, j].Passable, 0, visionmap[i, j] ? 1 : 0);
+                    }
                 }
+                sceneShaped = true;
             }
-            DrawArray(_drawList.ToArray(), PrimitiveType.Triangles);
+            else
+            {
+                Parallel.For(0, w.Field.Width, i =>
+                  {
+                      for (int j = 0; j < w.Field.Height; j++)
+                      {
+                          UpdateTile(6 * (i * w.Field.Height + j), w.Field[i, j].Passable, 0, visionmap[i, j] ? 1 : 0);
+                      }
+                  });
+            }
+            DrawArray(_drawList, PrimitiveType.Triangles);
         }
     }
 }

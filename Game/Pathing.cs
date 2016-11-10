@@ -26,7 +26,7 @@ namespace Game
         public LinkedList<Tile> FindPath(World w,Tile start, Tile end)
         {
             LinkedList<Tile> result=new LinkedList<Tile>();
-            double priority = Position.Distance(start.Position, end.Position);
+            double priority = Position.DistanceSqr(start.Position, end.Position);
             Dictionary<Tile,double> travelCost=new Dictionary<Tile, double>();
             Dictionary<Tile,Tile> previousTile=new Dictionary<Tile, Tile>();
             travelCost[start] = 0;
@@ -50,16 +50,16 @@ namespace Game
                 {
                     if (!closed.Contains(neighbour))
                     {
-                        double newCost = travelCost[current] + Position.Distance(current.Position, neighbour.Position);
+                        double newCost = travelCost[current] + Position.DistanceSqr(current.Position, neighbour.Position);
                         if (predictedCost.Contains(neighbour))
                         {
                             if(newCost>=travelCost[neighbour])
                                 continue;
-                            predictedCost.UpdatePriority(neighbour,newCost+Position.Distance(neighbour.Position,end.Position));
+                            predictedCost.UpdatePriority(neighbour,newCost+Position.DistanceSqr(neighbour.Position,end.Position));
                         }
                         else
                         {
-                            predictedCost.Enqueue(neighbour,newCost+Position.Distance(neighbour.Position,end.Position));
+                            predictedCost.Enqueue(neighbour,newCost+Position.DistanceSqr(neighbour.Position,end.Position));
                         }
                         travelCost[neighbour] = newCost;
                         previousTile[neighbour] = current;
