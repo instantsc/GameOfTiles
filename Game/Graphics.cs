@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Media.Converters;
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
@@ -40,6 +42,20 @@ namespace Game
             GL.UseProgram(0);
             GL.DeleteProgram(ProgramID);
         }
+    }
+
+    struct Rectangle
+    {
+        public Rectangle(double left, double top, double right, double bottom)
+        {
+            Left = left;
+            Right = right;
+            Top = top;
+            Bottom = bottom;
+        }
+        public double Top, Bottom, Left, Right;
+        public double Width => Right - Left;
+        public double Height => Bottom - Top;
     }
     static class Graphics
     {
@@ -130,9 +146,9 @@ namespace Game
                 DrawTriangle(ref vert2, ref vert3, ref vert4, Vector3.Zero);
             }
         }
-        public static void DrawWorld(World w, Unit u)
+        public static void DrawWorld(World w, Unit u,Rectangle view)
         {
-            Matrix4 mat = Matrix4.CreateOrthographicOffCenter(0, w.Field.Width, w.Field.Height, 0, -1, 1);
+            Matrix4 mat = Matrix4.CreateOrthographicOffCenter((float)view.Left, (float)view.Right, (float)view.Bottom, (float)view.Top, -1, 1);
             GL.UniformMatrix4(matrixLocation, false, ref mat);
             if (!sceneShaped)
             {

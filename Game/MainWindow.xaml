@@ -11,8 +11,11 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
-        <WindowsFormsHost>
-            <local:AAGLControl x:Name="GlControl" Resize="glControl_Resize" Paint="glControl_Paint"/>
+        <WindowsFormsHost x:Name="FormHost">
+            <local:AAGLControl x:Name="GlControl" Resize="glControl_Resize" Paint="glControl_Paint" 
+                               MouseWheel="GlControl_OnMouseWheel" MouseMove="GlControl_OnMouseMove" 
+                               MouseLeave="GlControl_OnMouseLeave" MouseEnter="GlControl_OnMouseEnter" 
+                               MouseDown="GlControl_OnMouseDown" MouseUp="GlControl_OnMouseUp"/>
         </WindowsFormsHost>
     </Grid>
 </Window>
