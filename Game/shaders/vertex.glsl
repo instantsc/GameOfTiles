@@ -1,6 +1,6 @@
 ﻿#version 330 core
-in vec3 pos;
-in vec3 vcolor;
+layout(location=0) in vec3 pos;
+layout(location=1) in vec3 vcolor;
 out vec3 fcolor;
 uniform mat4 MVP;
 void main()

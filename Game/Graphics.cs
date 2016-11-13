@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using OpenTK;
+using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 namespace Game
 {
@@ -44,6 +45,7 @@ namespace Game
     {
         public static ShaderProgram ShaderProgram;
         private static bool sceneShaped;
+        private static int matrixLocation;
         public static void Init()
         {
             sceneShaped = false;
@@ -54,6 +56,9 @@ namespace Game
             GL.BindBuffer(BufferTarget.ArrayBuffer, VBOId);
             ShaderProgram = new ShaderProgram("shaders\\vertex.glsl", "shaders\\fragment.glsl");
             ShaderProgram.Use();
+            matrixLocation = GL.GetUniformLocation(ShaderProgram.ProgramID, "MVP");
+            GL.ClearColor(Color4.White);
+            GL.Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
         }
         private static void DrawArray(Vector3[] pos, Vector3[] color, PrimitiveType type, bool texture = false)
         {
@@ -127,6 +132,8 @@ namespace Game
         }
         public static void DrawWorld(World w, Unit u)
         {
+            Matrix4 mat = Matrix4.CreateOrthographicOffCenter(0, w.Field.Width, w.Field.Height, 0, -1, 1);
+            GL.UniformMatrix4(matrixLocation, false, ref mat);
             if (!sceneShaped)
             {
                 _poses = new Vector3[w.Field.Height * w.Field.Height * 2 * 3];
