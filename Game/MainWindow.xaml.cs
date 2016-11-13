@@ -20,6 +20,7 @@ using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 using KeyEventArgs = System.Windows.Forms.KeyEventArgs;
+using System.Windows.Threading;
 
 namespace Game
 {
@@ -32,6 +33,7 @@ namespace Game
     {
         private World _w;
         private bool _init;
+        private DispatcherTimer drawTimer;
         public MainWindow()
         {
             _init = false;
@@ -50,8 +52,17 @@ namespace Game
         }
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            drawTimer=new DispatcherTimer();
+            drawTimer.Tick += DrawTimer_Tick;
+            drawTimer.Interval=new TimeSpan(0,0,0,0,50);
+            drawTimer.Start();
             _w = World.Generate(100, 100, 1);
             OpenGLInit();
+        }
+
+        private void DrawTimer_Tick(object sender, EventArgs e)
+        {
+          GlControl.Invalidate();
         }
 
         private void glControl_Resize(object sender, EventArgs e)
@@ -59,7 +70,6 @@ namespace Game
             if (_init)
             {
                 GL.Viewport(0, 0, GlControl.Width, GlControl.Height);
-                GlControl.Invalidate();
             }
         }
         Stopwatch sw = new Stopwatch();
@@ -109,8 +119,6 @@ namespace Game
                         break;
                     }
             }
-
-            GlControl.Invalidate();
         }
     }
 }
