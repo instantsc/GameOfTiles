@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Game
 {
@@ -23,7 +20,14 @@ namespace Game
         public Position MoveXDown => new Position(X - 1, Y);
         public Position MoveYUp => new Position(X, Y + 1);
         public Position MoveYDown => new Position(X, Y - 1);
-
+        public static bool operator ==(Position pos1, Position pos2)
+        {
+            return pos1.X == pos2.X && pos1.Y == pos2.Y;
+        }
+        public static bool operator !=(Position pos1, Position pos2)
+        {
+            return pos1.X != pos2.X || pos1.Y != pos2.Y;
+        }
         public static double DistanceSqr(Position pos1, Position pos2) => Math.Pow(pos1.X - pos2.X, 2) + Math.Pow(pos1.Y - pos2.Y, 2);
         public override string ToString()
         {
@@ -32,11 +36,13 @@ namespace Game
     }
     class Tile : PriorityQueue.FastPriorityQueueNode, IComparable<Tile>
     {
-        public Tile(Position pos, bool passable = true)
+        public Tile(Position pos, bool passable = true,Unit unit=null)
         {
             Position = pos;
             Passable = passable;
+            Unit = unit;
         }
+        public Unit Unit;
         public Position Position { get; }
         public bool Passable { get; set; }
         public int CompareTo(Tile other)
@@ -83,13 +89,30 @@ namespace Game
     }
     partial class World
     {
-        public HashSet<Unit> Units;
+        public List<Unit> Units;
         public Vision Vision;
-        public World(Field field,HashSet<Unit> units)
+        public World(Field field,List<Unit> units)
         {
             Vision=new Vision(this);
             Field = field;
-            Units = units??new HashSet<Unit>();
+            Units = units??new List<Unit>();
+            foreach (var unit in Units)
+            {
+                Field[unit.Position].Unit = unit;
+                Field[unit.Position].Passable = true;
+            }
+        }
+
+        public void UpdateUnitPositions()
+        {
+            foreach (var tile in Field.Tiles)
+            {
+                tile.Unit = null;
+            }
+            foreach (var unit in Units)
+            {
+                Field[unit.Position].Unit = unit;
+            }
         }
         public Field Field { get; }
 

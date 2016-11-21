@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Game
 {
@@ -50,10 +48,11 @@ namespace Game
                     tiles[i, j].Passable = true;
                 }
             }
-            HashSet<Unit> units = new HashSet<Unit>();
-            Unit viewer = new Unit(3, 3, 10);
-            field[3, 3].Passable = true;
-            units.Add(viewer);
+            List<Unit> units = new List<Unit>();
+            Unit p1 = new Unit(3, 3, 10);
+            Unit p2 = new Unit(3, 4, 10);
+            units.Add(p1);
+            units.Add(p2);
             return new World(field, units);
         }
     }

@@ -5,10 +5,7 @@ using System.Linq;
 using System.Timers;
 using System.Windows;
 using System.Windows.Input;
-using OpenTK;
-using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
-using System.Windows.Threading;
 using MouseEventArgs = System.Windows.Forms.MouseEventArgs;
 
 namespace Game
@@ -35,8 +32,8 @@ namespace Game
             glControl_Resize(this, new EventArgs());
         }
         private Rectangle view;
-        int width = 100;
-        int height = 100;
+        int width = 20;
+        int height = 20;
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             _drawTimer = new Timer();
@@ -66,9 +63,9 @@ namespace Game
         {
             if (_init)
             {
+                _w.UpdateUnitPositions();
                 _sw.Start();
-                GL.Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
-                Graphics.DrawWorld(_w, _w.Units.First(), view);
+                Graphics.DrawWorld(_w, view, _w.Units.ToArray());
                 GlControl.SwapBuffers();
                 _sw.Stop();
                 mainWindow.Title = $"{_sw.ElapsedMilliseconds.ToString(CultureInfo.InvariantCulture)}";
@@ -77,31 +74,56 @@ namespace Game
         }
         private void MainWindow_OnPreviewKeyDown(object sender, KeyEventArgs e)
         {
-            var unit = _w.Units.First();
+            var p1 = _w.Units.First();
+            var p2 = _w.Units.Last();
             switch (e.Key)
             {
                 case Key.Left:
                     {
-                        if (unit.X > 0 && _w.Field[unit.Position.MoveXDown].Passable)
-                            unit.X--;
+                        if (p1.X > 0 && _w.Field[p1.Position.MoveXDown].Passable)
+                            p1.X--;
                         break;
                     }
                 case Key.Right:
                     {
-                        if (unit.X < _w.Field.Width - 1 && _w.Field[unit.Position.MoveXUp].Passable)
-                            unit.X++;
+                        if (p1.X < _w.Field.Width - 1 && _w.Field[p1.Position.MoveXUp].Passable)
+                            p1.X++;
                         break;
                     }
                 case Key.Up:
                     {
-                        if (unit.Y > 0 && _w.Field[unit.Position.MoveYDown].Passable)
-                            unit.Y--;
+                        if (p1.Y > 0 && _w.Field[p1.Position.MoveYDown].Passable)
+                            p1.Y--;
                         break;
                     }
                 case Key.Down:
                     {
-                        if (unit.Y < _w.Field.Height - 1 && _w.Field[unit.Position.MoveYUp].Passable)
-                            unit.Y++;
+                        if (p1.Y < _w.Field.Height - 1 && _w.Field[p1.Position.MoveYUp].Passable)
+                            p1.Y++;
+                        break;
+                    }
+                case Key.A:
+                    {
+                        if (p2.X > 0 && _w.Field[p2.Position.MoveXDown].Passable)
+                            p2.X--;
+                        break;
+                    }
+                case Key.D:
+                    {
+                        if (p2.X < _w.Field.Width - 1 && _w.Field[p2.Position.MoveXUp].Passable)
+                            p2.X++;
+                        break;
+                    }
+                case Key.W:
+                    {
+                        if (p2.Y > 0 && _w.Field[p2.Position.MoveYDown].Passable)
+                            p2.Y--;
+                        break;
+                    }
+                case Key.S:
+                    {
+                        if (p2.Y < _w.Field.Height - 1 && _w.Field[p2.Position.MoveYUp].Passable)
+                            p2.Y++;
                         break;
                     }
             }
@@ -163,14 +185,14 @@ namespace Game
 
             view = Refit(new Rectangle(left, top, right, bottom));
         }
-        private Point? loc = null;
+        private Point? _loc;
         private void GlControl_OnMouseMove(object sender, MouseEventArgs e)
         {
-            if (loc != null)
+            if (_loc != null)
             {
                 Mouse.Capture(FormHost);
-                var diff = Mouse.GetPosition(FormHost) - loc.Value;
-                loc = Mouse.GetPosition(FormHost);
+                var diff = Mouse.GetPosition(FormHost) - _loc.Value;
+                _loc = Mouse.GetPosition(FormHost);
                 Mouse.Capture(null);
                 diff.X *= view.Width / FormHost.ActualWidth;
                 diff.Y *= view.Height / FormHost.ActualHeight;
@@ -186,7 +208,7 @@ namespace Game
         }
         private void GlControl_OnMouseLeave(object sender, EventArgs e)
         {
-            loc = null;
+            _loc = null;
         }
         private void GlControl_OnMouseEnter(object sender, EventArgs e)
         {
@@ -195,12 +217,12 @@ namespace Game
         private void GlControl_OnMouseDown(object sender, MouseEventArgs e)
         {
             Mouse.Capture(FormHost);
-            loc = Mouse.GetPosition(FormHost);
+            _loc = Mouse.GetPosition(FormHost);
             Mouse.Capture(null);
         }
         private void GlControl_OnMouseUp(object sender, MouseEventArgs e)
         {
-            loc = null;
+            _loc = null;
         }
     }
 }
