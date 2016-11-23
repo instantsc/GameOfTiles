@@ -30,9 +30,9 @@ namespace Game
             _init = true;
             glControl_Resize(this, new EventArgs());
         }
-        private Rectangle view;
-        int width = 10;
-        int height =10;
+        private Rectangle _view;
+        int width = 100;
+        int height = 100;
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             GL1.Init(GlControl.Handle);
@@ -40,7 +40,7 @@ namespace Game
             _drawTimer.Elapsed += DrawTimer_Tick;
             _drawTimer.Interval = 10;
             _drawTimer.Start();
-            view = new Rectangle(0, 0, width, height);
+            _view = new Rectangle(0, 0, width, height);
             _w = World.Generate(width, height, 1);
             OpenGLInit();
 
@@ -64,8 +64,20 @@ namespace Game
             if (_init)
             {
                 _w.UpdateUnitPositions();
+                if (_w.Units.First().Position == new Position(_w.Field.Width / 2, _w.Field.Height / 2))
+                {
+                    GlControl.Paint -= glControl_Paint;
+                    MessageBox.Show("Player 1 wins");
+                    Application.Current.Shutdown();
+                }
+                if (_w.Units.Last().Position == new Position(_w.Field.Width / 2, _w.Field.Height / 2))
+                {
+                    GlControl.Paint -= glControl_Paint;
+                    MessageBox.Show("Player 2 wins");
+                    Application.Current.Shutdown();
+                }
                 _sw.Start();
-                Graphics.DrawWorld(_w, view, _w.Units.ToArray());
+                Graphics.DrawWorld(_w, _view, _w.Units.ToArray());
                 GL1.Flush();
                 //GL1.Finish();
                 GL1.SwapBuffers(GL1.DC);
@@ -177,15 +189,15 @@ namespace Game
         private void GlControl_OnMouseWheel(object sender, MouseEventArgs e)
         {
             double k = e.Delta > 0 ? 0.95 : 1 / 0.95; //zoom coefficient
-            double px = view.Left + view.Width * e.X / GlControl.Width;
-            double py = view.Top + view.Height * e.Y / GlControl.Height;
-            double left = MultRel(view.Left, px, k);
-            double right = MultRel(view.Right, px, k);
+            double px = _view.Left + _view.Width * e.X / GlControl.Width;
+            double py = _view.Top + _view.Height * e.Y / GlControl.Height;
+            double left = MultRel(_view.Left, px, k);
+            double right = MultRel(_view.Right, px, k);
 
-            double top = MultRel(view.Top, py, k);
-            double bottom = MultRel(view.Bottom, py, k);
+            double top = MultRel(_view.Top, py, k);
+            double bottom = MultRel(_view.Bottom, py, k);
 
-            view = Refit(new Rectangle(left, top, right, bottom));
+            _view = Refit(new Rectangle(left, top, right, bottom));
         }
         private Point? _loc;
         private void GlControl_OnMouseMove(object sender, MouseEventArgs e)
@@ -196,15 +208,15 @@ namespace Game
                 var diff = Mouse.GetPosition(FormHost) - _loc.Value;
                 _loc = Mouse.GetPosition(FormHost);
                 Mouse.Capture(null);
-                diff.X *= view.Width / FormHost.ActualWidth;
-                diff.Y *= view.Height / FormHost.ActualHeight;
-                double left = view.Left - diff.X;
-                double right = view.Right - diff.X;
+                diff.X *= _view.Width / FormHost.ActualWidth;
+                diff.Y *= _view.Height / FormHost.ActualHeight;
+                double left = _view.Left - diff.X;
+                double right = _view.Right - diff.X;
 
-                double top = view.Top - diff.Y;
-                double bottom = view.Bottom - diff.Y;
+                double top = _view.Top - diff.Y;
+                double bottom = _view.Bottom - diff.Y;
 
-                view = Refit(new Rectangle(left, top, right, bottom));
+                _view = Refit(new Rectangle(left, top, right, bottom));
                 glControl_Paint(null, null);
             }
         }

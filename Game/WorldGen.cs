@@ -49,8 +49,8 @@ namespace Game
                 }
             }
             List<Unit> units = new List<Unit>();
-            Unit p1 = new Unit(3, 3, 10);
-            Unit p2 = new Unit(3, 4, 10);
+            Unit p1 = new Unit(0, 0, 10);
+            Unit p2 = new Unit(width-1, height-1, 10);
             units.Add(p1);
             units.Add(p2);
             return new World(field, units);
