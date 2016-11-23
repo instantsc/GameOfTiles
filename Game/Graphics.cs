@@ -1,42 +1,155 @@
 ﻿using System;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using OpenTK;
-using OpenTK.Graphics;
-using OpenTK.Graphics.OpenGL;
+using OpenTK.Graphics.OpenGL4;
+using GLsizei = System.Int32;
+using GLuint = System.UInt32;
+using GLenum = System.UInt32;
+using GLint = System.Int32;
+using GLbitfield = System.UInt32;
+using GLsizeiptr = System.IntPtr;
+using GLboolean = System.Boolean;
 namespace Game
 {
+    public static class GL1
+    {
+        [DllImport("opengl32.dll", EntryPoint = "wglGetProcAddress")]
+        public static extern IntPtr wglGetProcAddress(string name);
+
+        static GL1()
+        {
+            GenVertexArray = (glGenVertexArray)Marshal.GetDelegateForFunctionPointer(wglGetProcAddress("glGenVertexArrays"), typeof(glGenVertexArray));
+            BindVertexArray = (glBindVertexArray)Marshal.GetDelegateForFunctionPointer(wglGetProcAddress("glBindVertexArray"), typeof(glBindVertexArray));
+            GenBuffer = (glGenBuffers)Marshal.GetDelegateForFunctionPointer(wglGetProcAddress("glGenBuffers"), typeof(glGenBuffers));
+            BindBuffer = (glBindBuffer)Marshal.GetDelegateForFunctionPointer(wglGetProcAddress("glBindBuffer"), typeof(glBindBuffer));
+            BufferData = (glBufferData)Marshal.GetDelegateForFunctionPointer(wglGetProcAddress("glBufferData"), typeof(glBufferData));
+            VertexAttribPointer = (glVertexAttribPointer)Marshal.GetDelegateForFunctionPointer(wglGetProcAddress("glVertexAttribPointer"), typeof(glVertexAttribPointer));
+            EnableVertexAttribArray =
+                (glEnableVertexAttribArray)
+                Marshal.GetDelegateForFunctionPointer(wglGetProcAddress("glEnableVertexAttribArray"),
+                    typeof(glEnableVertexAttribArray));
+            UniformMatrix4 = (glUniformMatrix4fv)Marshal.GetDelegateForFunctionPointer(wglGetProcAddress("glUniformMatrix4fv"), typeof(glUniformMatrix4fv));
+            CreateShader = (glCreateShader)Marshal.GetDelegateForFunctionPointer(wglGetProcAddress("glCreateShader"), typeof(glCreateShader));
+            CreateProgram = (glCreateProgram)Marshal.GetDelegateForFunctionPointer(wglGetProcAddress("glCreateProgram"), typeof(glCreateProgram));
+            CompileShader = (glPassShader)Marshal.GetDelegateForFunctionPointer(wglGetProcAddress("glCompileShader"), typeof(glPassShader));
+            DeleteShader = (glPassShader)Marshal.GetDelegateForFunctionPointer(wglGetProcAddress("glDeleteShader"), typeof(glPassShader));
+            LinkProgram = (glPassShader)Marshal.GetDelegateForFunctionPointer(wglGetProcAddress("glLinkProgram"), typeof(glPassShader));
+            UseProgram = (glPassShader)Marshal.GetDelegateForFunctionPointer(wglGetProcAddress("glUseProgram"), typeof(glPassShader));
+            DeleteProgram = (glPassShader)Marshal.GetDelegateForFunctionPointer(wglGetProcAddress("glDeleteProgram"), typeof(glPassShader));
+            ShaderSource =
+                (glShaderSource)
+                Marshal.GetDelegateForFunctionPointer(wglGetProcAddress("glShaderSource"), typeof(glShaderSource));
+            AttachShader =
+                (glAttachShader)
+                Marshal.GetDelegateForFunctionPointer(wglGetProcAddress("glAttachShader"), typeof(glAttachShader));
+            DetachShader =
+                (glAttachShader)
+                Marshal.GetDelegateForFunctionPointer(wglGetProcAddress("glDetachShader"), typeof(glAttachShader));
+            GetUniformLocation =
+                (glGetUniformLocation)
+                Marshal.GetDelegateForFunctionPointer(wglGetProcAddress("glGetUniformLocation"),
+                    typeof(glGetUniformLocation));
+        }
+        public delegate void glGenVertexArray(int size, out uint arrays);
+        public static glGenVertexArray GenVertexArray;
+
+        public delegate void glBindVertexArray(uint arrays);
+        public static glBindVertexArray BindVertexArray;
+
+        public delegate void glGenBuffers(GLsizei n, ref GLuint buffers);
+        public static glGenBuffers GenBuffer;
+
+        public delegate void glBindBuffer(GLenum target, GLuint buffer);
+        public static glBindBuffer BindBuffer;
+
+        public delegate void glUniformMatrix4fv(GLint location, GLsizei count, GLboolean transpose, ref Matrix4 value);
+
+        public static glUniformMatrix4fv UniformMatrix4;
+
+        ///....\\\\
+        public delegate GLint glGetUniformLocation(GLuint program, string name);
+
+        public static glGetUniformLocation GetUniformLocation;
+        [DllImport("opengl32.dll", EntryPoint = "glClearColor")]
+        public static extern void ClearColor(float red, float green, float blue, float alpha);
+
+        [DllImport("opengl32.dll", EntryPoint = "glClear")]
+        public static extern void Clear(GLbitfield mask);
+
+        [DllImport("opengl32.dll", EntryPoint = "glDrawArrays")]
+        public static extern void DrawArrays(GLenum mode, GLint first, GLsizei count);
+
+        public delegate void glEnableVertexAttribArray(GLuint index);
+
+        public static glEnableVertexAttribArray EnableVertexAttribArray;
+
+        public delegate void glBufferData(GLenum target, GLsizeiptr size, Vector3[] data, GLenum usage);
+
+        public static glBufferData BufferData;
+
+        public delegate void glVertexAttribPointer(
+            GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, IntPtr pointer);
+
+        public static glVertexAttribPointer VertexAttribPointer;
+
+        public delegate uint glCreateShader(GLenum type);
+
+        public static glCreateShader CreateShader;
+
+        public delegate uint glCreateProgram();
+        public static glCreateProgram CreateProgram;
+
+        public delegate void glPassShader(uint shader);
+
+        public static glPassShader CompileShader;
+        public static glPassShader DeleteShader;
+        public static glPassShader LinkProgram;
+        public static glPassShader UseProgram;
+        public static glPassShader DeleteProgram;
+
+
+        public delegate void glShaderSource(uint shader, GLsizei count, string[] source, GLint[] length);
+
+        public static glShaderSource ShaderSource;
+
+        public delegate void glAttachShader(uint program, uint shader);
+
+        public static glAttachShader AttachShader;
+        public static glAttachShader DetachShader;
+
+    }
     public class ShaderProgram : IDisposable
     {
-        public int ProgramID { get; }
+        public uint ProgramID { get; }
         public ShaderProgram(string vertexPath, string fragPath)
         {
-            var vID = GL.CreateShader(ShaderType.VertexShader);
-            var fID = GL.CreateShader(ShaderType.FragmentShader);
+            var vID = GL1.CreateShader((uint)ShaderType.VertexShader);
+            var fID = GL1.CreateShader((uint)ShaderType.FragmentShader);
             var vertexText = File.ReadAllText(vertexPath);
             var fragText = File.ReadAllText(fragPath);
-            GL.ShaderSource(vID, vertexText);
-            GL.ShaderSource(fID, fragText);
-            GL.CompileShader(vID);
-            GL.CompileShader(fID);
-            ProgramID = GL.CreateProgram();
-            GL.AttachShader(ProgramID, vID);
-            GL.AttachShader(ProgramID, fID);
-            GL.LinkProgram(ProgramID);
-            GL.DetachShader(ProgramID, vID);
-            GL.DetachShader(ProgramID, fID);
-            GL.DeleteShader(vID);
-            GL.DeleteShader(fID);
-            var a = GL.GetProgramInfoLog(ProgramID);
+            GL1.ShaderSource(vID, 1, new[] { vertexText }, new[] { vertexText.Length });
+            GL1.ShaderSource(fID, 1, new[] { fragText }, new[] { fragText.Length });
+            GL1.CompileShader(vID);
+            GL1.CompileShader(fID);
+            ProgramID = GL1.CreateProgram();
+            GL1.AttachShader(ProgramID, vID);
+            GL1.AttachShader(ProgramID, fID);
+            GL1.LinkProgram(ProgramID);
+            GL1.DetachShader(ProgramID, vID);
+            GL1.DetachShader(ProgramID, fID);
+            GL1.DeleteShader(vID);
+            GL1.DeleteShader(fID);
         }
         public void Use()
         {
-            GL.UseProgram(ProgramID);
+            GL1.UseProgram(ProgramID);
         }
         public void Dispose()
         {
-            GL.UseProgram(0);
-            GL.DeleteProgram(ProgramID);
+            GL1.UseProgram(0);
+            GL1.DeleteProgram(ProgramID);
         }
     }
 
@@ -62,39 +175,47 @@ namespace Game
         public static void Init()
         {
             sceneShaped = false;
-            VAOId = GL.GenVertexArray();
-            GL.BindVertexArray(VAOId);
-            VBOId = GL.GenBuffer();
-            VBOId2 = GL.GenBuffer();
-            GL.BindBuffer(BufferTarget.ArrayBuffer, VBOId);
+            GL1.GenVertexArray(1, out VAOId);
+            GL1.BindVertexArray(VAOId);
+
+            GL1.GenBuffer(1, ref VBOId);
+
+            GL1.GenBuffer(1, ref VBOId2);
+
+            GL1.BindBuffer(0x8892, VBOId); //////////////
+
             ShaderProgram = new ShaderProgram("shaders\\vertex.glsl", "shaders\\fragment.glsl");
             ShaderProgram.Use();
-            matrixLocation = GL.GetUniformLocation(ShaderProgram.ProgramID, "MVP");
-            GL.ClearColor(Color4.White);
-            GL.Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
+            matrixLocation = GL1.GetUniformLocation(ShaderProgram.ProgramID, "MVP");
+
+            GL1.ClearColor((float)1, (float)1, (float)1, (float)0);
+            GL1.Clear(0x00000100 | 0x00004000); /////
         }
+
+
+
         private static void DrawArray(Vector3[] pos, Vector3[] color, PrimitiveType type, bool texture = false)
         {
             if (pos != null)
             {
-                GL.EnableVertexAttribArray(0);
-                GL.BindBuffer(BufferTarget.ArrayBuffer, VBOId);
-                GL.BufferData(BufferTarget.ArrayBuffer, Vector3.SizeInBytes * pos.Length, pos, BufferUsageHint.DynamicDraw);
-                GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, Vector3.SizeInBytes, 0);
+                GL1.EnableVertexAttribArray(0);
+                GL1.BindBuffer((uint)BufferTarget.ArrayBuffer, VBOId);
+                GL1.BufferData((uint)BufferTarget.ArrayBuffer, (IntPtr)(Vector3.SizeInBytes * pos.Length), pos, (uint)BufferUsageHint.DynamicDraw);
+                GL1.VertexAttribPointer(0, 3, (uint)VertexAttribPointerType.Float, false, Vector3.SizeInBytes, (IntPtr)0);
             }
             if (color != null)
             {
-                GL.EnableVertexAttribArray(1);
-                GL.BindBuffer(BufferTarget.ArrayBuffer, VBOId2);
-                GL.BufferData(BufferTarget.ArrayBuffer, Vector3.SizeInBytes * color.Length, color, BufferUsageHint.StreamDraw);
-                GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, Vector3.SizeInBytes, 0);
+                GL1.EnableVertexAttribArray(1);
+                GL1.BindBuffer((uint)BufferTarget.ArrayBuffer, VBOId2);
+                GL1.BufferData((uint)BufferTarget.ArrayBuffer, (IntPtr)(Vector3.SizeInBytes * color.Length), color, (uint)BufferUsageHint.StreamDraw);
+                GL1.VertexAttribPointer(1, 3, (uint)VertexAttribPointerType.Float, false, Vector3.SizeInBytes, (IntPtr)0);
             }
-            GL.DrawArrays(type, 0, color.Length);
-            GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
+            GL1.DrawArrays((uint)type, 0, color.Length);
+            GL1.BindBuffer((uint)BufferTarget.ArrayBuffer, 0);
         }
-        private static int VAOId;
-        private static int VBOId;
-        private static int VBOId2;
+        private static uint VAOId;
+        private static uint VBOId;
+        private static uint VBOId2;
         private static Vector3[] _poses;
         private static Vector3[] _colors;
 
@@ -143,9 +264,9 @@ namespace Game
         }
         public static void DrawWorld(World w, Rectangle view, params Unit[] u)
         {
-            GL.Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
+            GL1.Clear((uint)(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit));
             var mat = Matrix4.CreateOrthographicOffCenter((float)view.Left, (float)view.Right, (float)view.Bottom, (float)view.Top, -1, 1);
-            GL.UniformMatrix4(matrixLocation, false, ref mat);
+            GL1.UniformMatrix4(matrixLocation, 1, false, ref mat);
             if (!sceneShaped)
             {
                 _poses = new Vector3[w.Field.Height * w.Field.Height * 2 * 3];

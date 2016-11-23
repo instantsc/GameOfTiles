@@ -32,8 +32,8 @@ namespace Game
             glControl_Resize(this, new EventArgs());
         }
         private Rectangle view;
-        int width = 20;
-        int height = 20;
+        int width = 1000;
+        int height =1000;
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             _drawTimer = new Timer();
