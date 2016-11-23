@@ -36,6 +36,7 @@ namespace Game
         int height =1000;
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            GlControl.Init();
             _drawTimer = new Timer();
             _drawTimer.Elapsed += DrawTimer_Tick;
             _drawTimer.Interval = 10;
@@ -65,8 +66,7 @@ namespace Game
             {
                 _w.UpdateUnitPositions();
                 _sw.Start();
-                Graphics.DrawWorld(_w, view, _w.Units.ToArray());
-                GlControl.SwapBuffers();
+                Graphics.DrawWorld(_w, view,GlControl.Handle,GlControl.GLContext, _w.Units.ToArray());
                 _sw.Stop();
                 mainWindow.Title = $"{_sw.ElapsedMilliseconds.ToString(CultureInfo.InvariantCulture)}";
                 _sw.Reset();
