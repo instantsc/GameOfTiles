@@ -1,6 +1,6 @@
 ﻿namespace Game
 {
-    partial class AAGLControl
+    sealed partial class AAGLControl
     {
         /// <summary>
         /// Required designer variable.

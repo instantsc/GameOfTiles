@@ -5,7 +5,6 @@ using System.Linq;
 using System.Timers;
 using System.Windows;
 using System.Windows.Input;
-using OpenTK.Graphics.OpenGL;
 using MouseEventArgs = System.Windows.Forms.MouseEventArgs;
 
 namespace Game
@@ -32,11 +31,11 @@ namespace Game
             glControl_Resize(this, new EventArgs());
         }
         private Rectangle view;
-        int width = 1000;
-        int height =1000;
+        int width = 10;
+        int height =10;
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            GlControl.Init();
+            GL1.Init(GlControl.Handle);
             _drawTimer = new Timer();
             _drawTimer.Elapsed += DrawTimer_Tick;
             _drawTimer.Interval = 10;
@@ -56,7 +55,7 @@ namespace Game
         {
             if (_init)
             {
-                GL.Viewport(0, 0, GlControl.Width, GlControl.Height);
+                GL1.Viewport(0, 0, GlControl.Width, GlControl.Height);
             }
         }
         private readonly Stopwatch _sw = new Stopwatch();
@@ -66,7 +65,10 @@ namespace Game
             {
                 _w.UpdateUnitPositions();
                 _sw.Start();
-                Graphics.DrawWorld(_w, view,GlControl.Handle,GlControl.GLContext, _w.Units.ToArray());
+                Graphics.DrawWorld(_w, view, _w.Units.ToArray());
+                GL1.Flush();
+                //GL1.Finish();
+                GL1.SwapBuffers(GL1.DC);
                 _sw.Stop();
                 mainWindow.Title = $"{_sw.ElapsedMilliseconds.ToString(CultureInfo.InvariantCulture)}";
                 _sw.Reset();
@@ -172,7 +174,7 @@ namespace Game
             }
             return r;
         }
-        private void GlControl_OnMouseWheel(object sender, System.Windows.Forms.MouseEventArgs e)
+        private void GlControl_OnMouseWheel(object sender, MouseEventArgs e)
         {
             double k = e.Delta > 0 ? 0.95 : 1 / 0.95; //zoom coefficient
             double px = view.Left + view.Width * e.X / GlControl.Width;

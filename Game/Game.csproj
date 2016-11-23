@@ -35,14 +35,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="OpenTK, Version=1.2.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
-      <HintPath>..\packages\OpenTK.Next.1.2.2336.6514-pre\lib\net20\OpenTK.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="OpenTK.GLControl, Version=1.2.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
-      <HintPath>..\packages\OpenTK.Next.GLControl.1.2.2336.6514-pre\lib\net20\OpenTK.GLControl.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
@@ -73,13 +65,14 @@
     <Compile Include="AAGLControl.Designer.cs">
       <DependentUpon>AAGLControl.cs</DependentUpon>
     </Compile>
+    <Compile Include="API.cs" />
     <Compile Include="Graphics.cs" />
-    <Compile Include="Pathing.cs" />
+    <Compile Include="Matrix4.cs" />
     <Compile Include="PriorityQueue\FastPriorityQueue.cs" />
     <Compile Include="PriorityQueue\FastPriorityQueueNode.cs" />
-    <Compile Include="PriorityQueue\IPriorityQueue.cs" />
-    <Compile Include="PriorityQueue\SimplePriorityQueue.cs" />
     <Compile Include="Unit.cs" />
+    <Compile Include="Vector3.cs" />
+    <Compile Include="Vector4.cs" />
     <Compile Include="Vision.cs" />
     <Compile Include="World.cs" />
     <Compile Include="WorldGen.cs" />
