@@ -1,11 +1,28 @@
-﻿using OpenTK;
+﻿using System;
+using System.Windows.Controls;
+using System.Windows.Forms;
+using OpenTK;
 using OpenTK.Graphics;
 
 namespace Game
 {
-    public partial class AAGLControl : GLControl
+    public partial class AAGLControl : System.Windows.Forms.UserControl
     {
-        public AAGLControl() : base(new GraphicsMode(32, 24, 0, 8), 3, 0, GraphicsContextFlags.ForwardCompatible)
-        {}
+        public IntPtr GLContext;
+
+        public AAGLControl()
+        {
+            SetStyle(ControlStyles.Opaque, true);
+            SetStyle(ControlStyles.UserPaint, true);
+            SetStyle(ControlStyles.AllPaintingInWmPaint, true);
+        }
+
+        public void Init()
+        {
+            var a = Handle;
+            GLContext = GL1.CreateContext(a);
+
+        }
+
     }
 }

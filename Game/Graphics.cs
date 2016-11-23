@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Security;
 using System.Threading.Tasks;
 using OpenTK;
 using OpenTK.Graphics.OpenGL4;
@@ -20,6 +21,7 @@ namespace Game
 
         static GL1()
         {
+            var a = wglGetProcAddress("glGenVertexArrays");
             GenVertexArray = (glGenVertexArray)Marshal.GetDelegateForFunctionPointer(wglGetProcAddress("glGenVertexArrays"), typeof(glGenVertexArray));
             BindVertexArray = (glBindVertexArray)Marshal.GetDelegateForFunctionPointer(wglGetProcAddress("glBindVertexArray"), typeof(glBindVertexArray));
             GenBuffer = (glGenBuffers)Marshal.GetDelegateForFunctionPointer(wglGetProcAddress("glGenBuffers"), typeof(glGenBuffers));
@@ -67,8 +69,30 @@ namespace Game
         public delegate void glUniformMatrix4fv(GLint location, GLsizei count, GLboolean transpose, ref Matrix4 value);
 
         public static glUniformMatrix4fv UniformMatrix4;
+        [DllImport("User32.dll")]
+        public static extern IntPtr GetDC(IntPtr hwnd);
 
-        ///....\\\\
+        [DllImport("User32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool ReleaseDC(IntPtr hwnd, IntPtr dc);
+
+        public static IntPtr CreateContext(IntPtr handle)
+        {
+            var dc = GetDC(handle);
+            var a = CreateContext1(dc);
+            ReleaseDC(handle, dc);
+            return a;
+        }
+        [DllImport("gdi32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool SwapBuffers(IntPtr dc);
+        [SuppressUnmanagedCodeSecurity]
+        [DllImport("opengl32.dll", EntryPoint = "wglCreateContext", ExactSpelling = true)]
+        static extern IntPtr CreateContext1(IntPtr c);
+        [SuppressUnmanagedCodeSecurity]
+        [DllImport("opengl32.dll", EntryPoint = "wglMakeCurrent", ExactSpelling = true)]
+        public static extern bool MakeCurrent(IntPtr a, IntPtr b);
+
         public delegate GLint glGetUniformLocation(GLuint program, string name);
 
         public static glGetUniformLocation GetUniformLocation;
@@ -262,8 +286,10 @@ namespace Game
                 _poses[_iii++] = vert4;
             }
         }
-        public static void DrawWorld(World w, Rectangle view, params Unit[] u)
+        public static void DrawWorld(World w, Rectangle view, IntPtr hwnd, IntPtr glContext, params Unit[] u)
         {
+            var dc = GL1.GetDC(hwnd);
+            GL1.MakeCurrent(dc, glContext);
             GL1.Clear((uint)(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit));
             var mat = Matrix4.CreateOrthographicOffCenter((float)view.Left, (float)view.Right, (float)view.Bottom, (float)view.Top, -1, 1);
             GL1.UniformMatrix4(matrixLocation, 1, false, ref mat);
@@ -327,7 +353,9 @@ namespace Game
                 UpdateTile(6 * (unit.Position.X * w.Field.Height + unit.Position.Y), true, ref cPlayer, ref cVisible);
             }
             DrawArray(null, _colors, PrimitiveType.Triangles);
-
+            GL1.SwapBuffers(dc);
+            GL1.MakeCurrent((IntPtr)0, (IntPtr)0);
+            GL1.ReleaseDC(hwnd, dc);
         }
     }
 }
